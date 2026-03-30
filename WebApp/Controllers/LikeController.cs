@@ -12,20 +12,20 @@ public class LikeController(ILikeService service) : ControllerBase
     public async Task<IActionResult> Post(CreateLikeDto dto)
     {
         var res = await service.CreateLike(dto);
-        return Ok(res);
+        return StatusCode(res.StatusCode, res);
     }
 
     [HttpDelete]
     public async Task<IActionResult> Delete(int id)
     {
         var res = await service.DeleteLike(id);
-        return Ok(res);
+        return StatusCode(res.StatusCode, res);
     }
 
     [HttpGet]
     public async Task<IActionResult> Get()
     {
         var res = await service.GetLikes();
-        return Ok(res);
+        return StatusCode(res.StatusCode, res);
     }
 }

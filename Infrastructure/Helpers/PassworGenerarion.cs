@@ -1,4 +1,4 @@
-﻿namespace Infrastructure.Helper;
+﻿namespace Infrastructure.Helpers;
 
 public static class PasswordGenerate
 {

@@ -10,7 +10,7 @@ public class User : IdentityUser<int>
     [Required]
     public override string Email { get; set; }
     [MaxLength(30)]
-    public required override string UserName { get; set; }
+    public override required string UserName { get; set; }
     [MaxLength(500)]
     public string? About { get; set; }
     public bool IsDeleted { get; set; } = false;

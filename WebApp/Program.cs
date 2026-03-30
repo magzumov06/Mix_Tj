@@ -8,11 +8,8 @@ using Infrastructure.Data;
 using Infrastructure.Data.Seeder;
 using Infrastructure.ExtensionMethod;
 using Infrastructure.FileStorage;
-using Infrastructure.Helper;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -74,6 +71,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseHttpsRedirection();
 app.MapControllers();
+app.UseStaticFiles();
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;

@@ -4,7 +4,7 @@ using Domain.DTOs.EmailDto;
 using Domain.Entities;
 using Domain.Responces;
 using Infrastructure.FileStorage;
-using Infrastructure.Helper;
+using Infrastructure.Helpers;
 using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;

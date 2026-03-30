@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Infrastructure.Helper;
+namespace Infrastructure.Helpers;
 
 public static class GenerateJwtTokenHelper
 {
