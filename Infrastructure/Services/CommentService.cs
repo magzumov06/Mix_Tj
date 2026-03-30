@@ -125,57 +125,89 @@ public class CommentService(DataContext context) : ICommentService
         }
     }
 
-    public async Task<Responce<List<GetCommentDto>>> GetCommentsByVideoId(int videoId)
+     private List<GetCommentDto> BuildReplies(Comment parent, List<Comment> allComments)
     {
-        try
-        {
-            var comments = await context.Comments.Where(x => x.VideoId == videoId).ToListAsync();
-            if(comments.Count == 0) return new Responce<List<GetCommentDto>>(HttpStatusCode.NotFound, "Comment not found");
-            var dtos = comments.Select(x=>new GetCommentDto()
+        return allComments
+            .Where(c => c.ParentCommentId == parent.Id)
+            .Select(c => new GetCommentDto
             {
-                Id = x.Id,
-                Text = x.Text,
-                ParentCommentId = x.ParentCommentId,
-                UserId = x.UserId,
-                NewsId = x.NewsId,
-                VideoId = x.VideoId,
-                CreatedAt = x.CreatedAt,
-                UpdatedAt = x.UpdatedAt
+                Id = c.Id,
+                Text = c.Text,
+                ParentCommentId = c.ParentCommentId,
+                UserId = c.UserId,
+                VideoId = c.VideoId,
+                NewsId = c.NewsId,
+                CreatedAt = c.CreatedAt,
+                UpdatedAt = c.UpdatedAt,
+                Replies = BuildReplies(c, allComments)
             }).ToList();
-            
-            return new Responce<List<GetCommentDto>>(dtos);
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
     }
 
     public async Task<Responce<List<GetCommentDto>>> GetCommentsByNewsId(int newsId)
     {
         try
         {
-            var comments = await context.Comments.Where(x => x.NewsId == newsId).ToListAsync();
-            if(comments.Count == 0)
-                return new Responce<List<GetCommentDto>>(HttpStatusCode.NotFound, "Comment not found");
-            var dtos = comments.Select(x=>new GetCommentDto()
-            {
-                Id = x.Id,
-                Text = x.Text,
-                ParentCommentId = x.ParentCommentId,
-                UserId = x.UserId,
-                NewsId = x.NewsId,
-                VideoId = x.VideoId,
-                CreatedAt = x.CreatedAt,
-                UpdatedAt = x.UpdatedAt
-            }).ToList();
+            var comments = await context.Comments
+                .Where(x => x.NewsId == newsId)
+                .ToListAsync();
+
+            if (!comments.Any())
+                return new Responce<List<GetCommentDto>>(new List<GetCommentDto>());
+
+            var dtos = comments
+                .Where(c => c.ParentCommentId == null)
+                .Select(c => new GetCommentDto
+                {
+                    Id = c.Id,
+                    Text = c.Text,
+                    ParentCommentId = c.ParentCommentId,
+                    UserId = c.UserId,
+                    VideoId = c.VideoId,
+                    NewsId = c.NewsId,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt,
+                    Replies = BuildReplies(c, comments)
+                }).ToList();
+
             return new Responce<List<GetCommentDto>>(dtos);
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
-            throw;
+            return new Responce<List<GetCommentDto>>(HttpStatusCode.InternalServerError, e.Message);
+        }
+    }
+
+    public async Task<Responce<List<GetCommentDto>>> GetCommentsByVideoId(int videoId)
+    {
+        try
+        {
+            var comments = await context.Comments
+                .Where(x => x.VideoId == videoId)
+                .ToListAsync();
+
+            if (!comments.Any())
+                return new Responce<List<GetCommentDto>>(new List<GetCommentDto>());
+
+            var dtos = comments
+                .Where(c => c.ParentCommentId == null)
+                .Select(c => new GetCommentDto
+                {
+                    Id = c.Id,
+                    Text = c.Text,
+                    ParentCommentId = c.ParentCommentId,
+                    UserId = c.UserId,
+                    VideoId = c.VideoId,
+                    NewsId = c.NewsId,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt,
+                    Replies = BuildReplies(c, comments)
+                }).ToList();
+
+            return new Responce<List<GetCommentDto>>(dtos);
+        }
+        catch (Exception e)
+        {
+            return new Responce<List<GetCommentDto>>(HttpStatusCode.InternalServerError, e.Message);
         }
     }
 }
