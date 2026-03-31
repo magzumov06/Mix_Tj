@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Domain.DTOs.VideosDto;
 using Domain.Entities;
+using Domain.Enums;
 using Domain.Filters;
 using Domain.Responces;
 using Infrastructure.Data;
@@ -13,7 +14,7 @@ namespace Infrastructure.Services;
 public class VideoService(DataContext context,
     IFileStorage file) : IVideoService
 {
-    public async Task<Responce<string>> CreateVideo(CreateVideoDto dto)
+    public async Task<Responce<string>> CreateVideo(CreateVideoDto dto, int authorId)
     {
         try
         {
@@ -22,7 +23,7 @@ public class VideoService(DataContext context,
                 Title = dto.Title,
                 Description = dto.Description,
                 VideoType = dto.VideoType,
-                AuthorId = dto.AuthorId,
+                AuthorId = authorId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
@@ -77,6 +78,8 @@ public class VideoService(DataContext context,
         {
             var video = await context.Videos.FirstOrDefaultAsync(x => x.Id == id);
             if (video == null) return new Responce<string>(HttpStatusCode.NotFound,"Video not found");
+            if (!string.IsNullOrEmpty(video.Url))
+                await file.DeleteFile(video.Url);
             context.Videos.Remove(video);
             var res = await context.SaveChangesAsync();
             return res > 0
@@ -157,14 +160,63 @@ public class VideoService(DataContext context,
                 VideoType = x.VideoType,
                 AuthorId = x.AuthorId,
                 Url = x.Url,
+                Likes = context.Likes.Count(l =>
+                    l.TargetId == x.Id &&
+                    l.TargetType == TargetType.Video &&
+                    l.Type == LikeType.Like),
+
+                Dislikes = context.Likes.Count(l =>
+                    l.TargetId == x.Id &&
+                    l.TargetType == TargetType.Video &&
+                    l.Type == LikeType.Dislike),
                 CreatedAt = x.CreatedAt,
                 UpdatedAt = x.UpdatedAt,
-            }).ToList();
+            })
+            .OrderByDescending(v => v.CreatedAt)
+            .ToList();
             return new PaginationResponce<List<GetVideoDto>>(dtos, count, filter.PageNumber, filter.PageSize);
         }
         catch (Exception e)
         {
             return new PaginationResponce<List<GetVideoDto>>(HttpStatusCode.InternalServerError, e.Message);
+        }
+    }
+
+    public async Task<Responce<List<GetVideoDto>>> GetMyVideos(int authorId)
+    {
+        try
+        {
+            var videos = await context.Videos
+                .Where(x => x.AuthorId == authorId)
+                .OrderByDescending(x => x.CreatedAt)
+                .Select(x => new GetVideoDto
+                {
+                    Id = x.Id,
+                    Title = x.Title,
+                    Description = x.Description,
+                    VideoType = x.VideoType,
+                    AuthorId = x.AuthorId,
+                    Url = x.Url,
+
+                    Likes = context.Likes.Count(l =>
+                        l.TargetId == x.Id &&
+                        l.TargetType == TargetType.Video &&
+                        l.Type == LikeType.Like),
+
+                    Dislikes = context.Likes.Count(l =>
+                        l.TargetId == x.Id &&
+                        l.TargetType == TargetType.Video &&
+                        l.Type == LikeType.Dislike),
+
+                    CreatedAt = x.CreatedAt,
+                    UpdatedAt = x.UpdatedAt
+                })
+                .ToListAsync();
+            return new Responce<List<GetVideoDto>>(videos);
+        }
+        catch (Exception e)
+        {
+            return new Responce<List<GetVideoDto>>(HttpStatusCode.InternalServerError, e.Message);
         }
     }
 }

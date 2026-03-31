@@ -10,6 +10,8 @@ public class GetVideoDto
     public string? Url { get; set; }
     public VideoType VideoType { get; set; }
     public int AuthorId { get; set; }
+    public int Likes {get; set;}
+    public int Dislikes {get; set;}
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 }

@@ -36,12 +36,11 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("NewsId")
+                    b.Property<int?>("NewsId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Reply")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
+                    b.Property<int?>("ParentCommentId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Text")
                         .IsRequired()
@@ -54,12 +53,14 @@ namespace Infrastructure.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("VideoId")
+                    b.Property<int?>("VideoId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
                     b.HasIndex("NewsId");
+
+                    b.HasIndex("ParentCommentId");
 
                     b.HasIndex("UserId");
 
@@ -454,9 +455,11 @@ namespace Infrastructure.Migrations
                 {
                     b.HasOne("Domain.Entities.News", "News")
                         .WithMany("Comments")
-                        .HasForeignKey("NewsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("NewsId");
+
+                    b.HasOne("Domain.Entities.Comment", "ParentComment")
+                        .WithMany("Replies")
+                        .HasForeignKey("ParentCommentId");
 
                     b.HasOne("Domain.Entities.User", "User")
                         .WithMany("Comments")
@@ -466,11 +469,11 @@ namespace Infrastructure.Migrations
 
                     b.HasOne("Domain.Entities.Video", "Video")
                         .WithMany("Comments")
-                        .HasForeignKey("VideoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("VideoId");
 
                     b.Navigation("News");
+
+                    b.Navigation("ParentComment");
 
                     b.Navigation("User");
 
@@ -576,6 +579,8 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Comment", b =>
                 {
                     b.Navigation("Likes");
+
+                    b.Navigation("Replies");
                 });
 
             modelBuilder.Entity("Domain.Entities.News", b =>

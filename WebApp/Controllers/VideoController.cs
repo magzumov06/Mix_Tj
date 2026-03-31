@@ -1,4 +1,5 @@
-﻿using Domain.DTOs.VideosDto;
+﻿using System.Security.Claims;
+using Domain.DTOs.VideosDto;
 using Domain.Filters;
 using Infrastructure.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +13,14 @@ public class VideoController(IVideoService service) :  ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateVideo(CreateVideoDto video)
     {
-        var res = await service.CreateVideo(video);
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        if (userIdClaim == null)
+            return Unauthorized("User not authenticated");
+
+        var authorId = int.Parse(userIdClaim);
+        
+        var res = await service.CreateVideo(video, authorId);
         return StatusCode(res.StatusCode, res);
     }
 
@@ -41,6 +49,17 @@ public class VideoController(IVideoService service) :  ControllerBase
     public async Task<IActionResult> GetVideos([FromQuery] VideoFilter filter)
     {
         var res = await service.GetVideos(filter);
+        return StatusCode(res.StatusCode, res);
+    }
+
+    [HttpGet("myVideos")]
+    public async Task<IActionResult> GetMyVideos()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim == null)
+            return Unauthorized("User not authenticated");
+        var authorId = int.Parse(userIdClaim);
+        var res = await service.GetMyVideos(authorId);
         return StatusCode(res.StatusCode, res);
     }
 }

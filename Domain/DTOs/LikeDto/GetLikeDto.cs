@@ -8,6 +8,8 @@ public class GetLikeDto
     public int Id {get; set;}
     public int UserId { get; set; }
     public int TargetId { get; set; }
+    public TargetType TargetType { get; set; }
+
     public LikeType Type { get; set; } 
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

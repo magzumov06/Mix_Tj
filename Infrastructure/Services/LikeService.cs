@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Domain.DTOs.LikeDto;
 using Domain.Entities;
+using Domain.Enums;
 using Domain.Responces;
 using Infrastructure.Data;
 using Infrastructure.Interfaces;
@@ -11,15 +12,36 @@ namespace Infrastructure.Services;
 
 public class LikeService(DataContext context) : ILikeService
 {
-    public async Task<Responce<string>> CreateLike(CreateLikeDto dto)
+    public async Task<Responce<string>> CreateLike(CreateLikeDto dto,int  userId)
     {
         try
         {
+            bool targetExists = dto.TargetType switch
+            {
+                TargetType.Video => await context.Videos.AnyAsync(v => v.Id == dto.TargetId),
+                TargetType.News => await context.Newses.AnyAsync(n => n.Id == dto.TargetId),
+                TargetType.Comment => await context.Comments.AnyAsync(c => c.Id == dto.TargetId),
+                _ => false
+            };
+
+            if (!targetExists)
+                return new Responce<string>(HttpStatusCode.BadRequest, "Target not found");
+
+            var existingLike = await context.Likes
+                .AnyAsync(l => l.UserId == userId &&
+                               l.TargetId == dto.TargetId &&
+                               l.TargetType == dto.TargetType);
+
+            if (existingLike)
+                return new Responce<string>(HttpStatusCode.BadRequest, "Already liked/disliked");
+
+            
             var like = new Like()
             {
                 UserId = dto.UserId,
                 TargetId = dto.TargetId,
                 Type = dto.Type,
+                TargetType = dto.TargetType,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
@@ -65,10 +87,37 @@ public class LikeService(DataContext context) : ILikeService
                 UserId = x.UserId,
                 TargetId = x.TargetId,
                 Type = x.Type,
+                TargetType = x.TargetType,
                 CreatedAt = x.CreatedAt,
                 UpdatedAt = x.UpdatedAt,
             }).ToList();
             return new Responce<List<GetLikeDto>>(dto);
+        }
+        catch (Exception e)
+        {
+            return new Responce<List<GetLikeDto>>(HttpStatusCode.InternalServerError, e.Message);
+        }
+    }
+
+    public async Task<Responce<List<GetLikeDto>>> GetMyLikes(int userId)
+    {
+        try
+        {
+            var dtos = await context.Likes
+                .Where(x => x.UserId == userId)
+                .OrderByDescending(x => x.CreatedAt)
+                .Select(x => new GetLikeDto
+                {
+                    Id = x.Id,
+                    UserId = x.UserId,
+                    TargetId = x.TargetId,
+                    Type = x.Type,
+                    TargetType = x.TargetType,
+                    CreatedAt = x.CreatedAt,
+                    UpdatedAt = x.UpdatedAt
+                })
+                .ToListAsync();
+            return new Responce<List<GetLikeDto>>(dtos);
         }
         catch (Exception e)
         {
