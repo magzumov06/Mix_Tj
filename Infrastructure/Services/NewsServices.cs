@@ -12,7 +12,7 @@ namespace Infrastructure.Services;
 
 public class NewsServices(DataContext context) : INewsService 
 {
-    public async Task<Responce<string>> CreateNews(CreateNewsDto create)
+    public async Task<Responce<string>> CreateNews(CreateNewsDto create, int userId)
     {
         try
         {
@@ -23,7 +23,7 @@ public class NewsServices(DataContext context) : INewsService
                 Content = create.Content,
                 Category = create.Category,
                 Tags = create.Tags,
-                AuthorId = create.AuthorId,
+                AuthorId = userId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
             };
@@ -40,12 +40,12 @@ public class NewsServices(DataContext context) : INewsService
         }
     }
 
-    public async Task<Responce<string>> UpdateNews(UpdateNewsDto update)
+    public async Task<Responce<string>> UpdateNews(UpdateNewsDto update, int authorId)
     {
         try
         {
             Log.Information("Updating new news");
-            var res = await context.Newses.FirstOrDefaultAsync(x=>x.Id == update.Id);
+            var res = await context.Newses.FirstOrDefaultAsync(x=>x.Id == update.Id && x.AuthorId == authorId);
             if(res == null) return new Responce<string>(HttpStatusCode.NotFound,"News not found");
             res.Title = update.Title;
             res.Content = update.Content;
@@ -64,12 +64,12 @@ public class NewsServices(DataContext context) : INewsService
         }
     }
 
-    public async Task<Responce<string>> DeleteNews(int id)
+    public async Task<Responce<string>> DeleteNews(int id, int authorId)
     {
         try
         {
             Log.Information("Deleting news");
-            var res = await context.Newses.FirstOrDefaultAsync(x => x.Id == id);
+            var res = await context.Newses.FirstOrDefaultAsync(x => x.Id == id && x.AuthorId == authorId);
             if (res == null) return new Responce<string>(HttpStatusCode.NotFound, "News not found");
             res.IsDeleted = true;
             var result = await context.SaveChangesAsync();
@@ -131,8 +131,8 @@ public class NewsServices(DataContext context) : INewsService
                 Title = x.Title,
                 Content = x.Content,
                 Category = x.Category,
-                CreatedAt = x.CreatedAt,
                 AuthorId = x.AuthorId,
+                CreatedAt = x.CreatedAt,
                 UpdatedAt = x.UpdatedAt,
             }).ToList();
             return new PaginationResponce<List<GetNewsDto>>(dtos, count, filter.PageNumber, filter.PageSize );
@@ -167,6 +167,31 @@ public class NewsServices(DataContext context) : INewsService
         {
             Log.Error("Error getting new news");
             return new Responce<GetNewsDto>(HttpStatusCode.InternalServerError, e.Message);
+        }
+    }
+
+    public async Task<Responce<List<GetNewsDto>>> GetMyNews(int authorId)
+    {
+        try
+        {
+            var news = await context.Newses
+                .Where(x=>x.AuthorId == authorId)
+                .OrderByDescending(x => x.CreatedAt)
+                .Select(x=>new GetNewsDto()
+                {
+                    Id = x.Id,
+                    Title = x.Title,
+                    Content = x.Content,
+                    Category = x.Category,
+                    AuthorId = x.AuthorId,
+                    CreatedAt = x.CreatedAt,
+                    UpdatedAt = x.UpdatedAt,
+                }).ToListAsync();
+            return new Responce<List<GetNewsDto>>(news);
+        }
+        catch (Exception e)
+        {
+            return new Responce<List<GetNewsDto>>(HttpStatusCode.InternalServerError, e.Message);
         }
     }
 }

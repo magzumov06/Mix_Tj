@@ -128,6 +128,9 @@ namespace Infrastructure.Migrations
                     b.Property<int>("TargetId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("TargetType")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 

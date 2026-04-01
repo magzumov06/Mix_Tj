@@ -7,5 +7,4 @@ public enum Category
     Culture,
     Technology,
     Society
-    
 }
