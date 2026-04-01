@@ -57,11 +57,11 @@ public class LikeService(DataContext context) : ILikeService
         }
     }
 
-    public async Task<Responce<string>> DeleteLike(int id)
+    public async Task<Responce<string>> DeleteLike(int id, int  userId)
     {
         try
         {
-            var like = await context.Likes.FirstOrDefaultAsync(x=>x.Id == id);
+            var like = await context.Likes.FirstOrDefaultAsync(x=>x.Id == id && x.UserId == userId);
             if (like ==  null) return new Responce<string>(HttpStatusCode.NotFound,"Like not found");
             context.Likes.Remove(like);
             var res = await context.SaveChangesAsync();

@@ -43,11 +43,11 @@ public class VideoService(DataContext context,
         }
     }
 
-    public async Task<Responce<string>> UpdateVideo(UpdateVideDto dto)
+    public async Task<Responce<string>> UpdateVideo(UpdateVideDto dto, int  authorId)
     {
         try
         {
-            var video = await context.Videos.FirstOrDefaultAsync(x=>x.Id == dto.Id);
+            var video = await context.Videos.FirstOrDefaultAsync(x=>x.Id == dto.Id && x.AuthorId == authorId);
             if (video == null) return new Responce<string>(HttpStatusCode.NotFound,"Video not found");
             video.Title = dto.Title;
             video.Description = dto.Description;
@@ -72,11 +72,11 @@ public class VideoService(DataContext context,
         }
     }
 
-    public async Task<Responce<string>> DeleteVideo(int id)
+    public async Task<Responce<string>> DeleteVideo(int id, int authorId)
     {
         try
         {
-            var video = await context.Videos.FirstOrDefaultAsync(x => x.Id == id);
+            var video = await context.Videos.FirstOrDefaultAsync(x => x.Id == id && x.AuthorId == authorId);
             if (video == null) return new Responce<string>(HttpStatusCode.NotFound,"Video not found");
             if (!string.IsNullOrEmpty(video.Url))
                 await file.DeleteFile(video.Url);
@@ -92,7 +92,7 @@ public class VideoService(DataContext context,
         }
     }
 
-    public async Task<Responce<GetVideoDto>> GetVideo(int id)
+    public async Task<Responce<GetVideoDto>> GetVideoById(int id)
     {
         try
         {

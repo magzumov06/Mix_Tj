@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Domain.DTOs.CommentDto;
 using Infrastructure.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApp.Controllers;
@@ -11,6 +12,7 @@ namespace WebApp.Controllers;
 public class CommentController(ICommentService service) : ControllerBase
 {
     [HttpPost]
+    [Authorize(Roles = "Admin,User")]
     public async Task<IActionResult> Post(CreateCommentDto dto)
     {
         
@@ -25,20 +27,31 @@ public class CommentController(ICommentService service) : ControllerBase
     }
 
     [HttpPut]
+    [Authorize(Roles = "Admin,User")]
     public async Task<IActionResult> Put(UpdateCommentDto dto)
     {
-        var res = await service.UpdateComment(dto);
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim == null)
+            return Unauthorized("User not found in token");
+        var userId = int.Parse(userIdClaim);
+        var res = await service.UpdateComment(dto, userId);
         return StatusCode(res.StatusCode, res);
     }
 
     [HttpDelete]
+    [Authorize(Roles = "Admin,User")]
     public async Task<IActionResult> Delete(int id)
     {
-        var res = await service.DeleteComment(id);
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim == null)
+            return Unauthorized("User not found in token");
+        var userId = int.Parse(userIdClaim);
+        var res = await service.DeleteComment(id,userId);
         return StatusCode(res.StatusCode, res);
     }
 
     [HttpGet("{id}")]
+    [Authorize(Roles = "Admin,User")]
     public async Task<IActionResult> GetComments(int id)
     {
         var res = await service.GetComment(id);
@@ -46,6 +59,7 @@ public class CommentController(ICommentService service) : ControllerBase
     }
 
     [HttpGet("news/{newsId}/comments")]
+    [Authorize(Roles = "Admin,User")]
     public async Task<IActionResult> GetCommentsByNewsId(int newsId)
     {
         var res = await service.GetCommentsByNewsId(newsId);
@@ -53,6 +67,7 @@ public class CommentController(ICommentService service) : ControllerBase
     }
 
     [HttpGet("videos/{videoId}/comments")]
+    [Authorize(Roles = "Admin,User")]
     public async Task<IActionResult> GetCommentsByVideoId(int videoId)
     {
         var res = await service.GetCommentsByVideoId(videoId);

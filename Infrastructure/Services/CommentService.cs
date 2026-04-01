@@ -63,11 +63,11 @@ public class CommentService(DataContext context) : ICommentService
         }
     }
 
-    public async Task<Responce<string>> UpdateComment(UpdateCommentDto dto)
+    public async Task<Responce<string>> UpdateComment(UpdateCommentDto dto, int userId)
     {
         try
         {
-            var comment = await context.Comments.FirstOrDefaultAsync(x=>x.Id == dto.Id);
+            var comment = await context.Comments.FirstOrDefaultAsync(x=>x.Id == dto.Id && x.UserId == userId);
             if(comment == null) return new Responce<string>(HttpStatusCode.NotFound, "Comment not found");
             comment.Text = dto.Text;
             comment.UpdatedAt = DateTime.UtcNow;
@@ -82,11 +82,11 @@ public class CommentService(DataContext context) : ICommentService
         }
     }
 
-    public async Task<Responce<string>> DeleteComment(int id)
+    public async Task<Responce<string>> DeleteComment(int id,int userId)
     {
         try
         {
-            var comment = await context.Comments.FirstOrDefaultAsync(x => x.Id == id);
+            var comment = await context.Comments.FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
             if (comment == null) return new Responce<string>(HttpStatusCode.NotFound, "Comment not found");
             context.Comments.Remove(comment);
             var res = await context.SaveChangesAsync();

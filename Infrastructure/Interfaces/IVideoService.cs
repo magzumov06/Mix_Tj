@@ -7,9 +7,9 @@ namespace Infrastructure.Interfaces;
 public interface IVideoService
 { 
     Task<Responce<string>> CreateVideo(CreateVideoDto dto, int authorId); 
-    Task<Responce<string>> UpdateVideo(UpdateVideDto dto); 
-    Task<Responce<string>> DeleteVideo(int id);
-    Task<Responce<GetVideoDto>> GetVideo(int id);
+    Task<Responce<string>> UpdateVideo(UpdateVideDto dto, int  authorId); 
+    Task<Responce<string>> DeleteVideo(int id, int authorId);
+    Task<Responce<GetVideoDto>> GetVideoById(int id);
     Task<PaginationResponce<List<GetVideoDto>>> GetVideos(VideoFilter filter);
     Task<Responce<List<GetVideoDto>>> GetMyVideos(int authorId);
     

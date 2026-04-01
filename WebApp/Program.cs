@@ -14,11 +14,13 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Serilog Configuration
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Information()
+    .WriteTo.Console(restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Debug)
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day,
+        restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
     .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File("logs/mix-api-.log", rollingInterval: RollingInterval.Day)
+    .MinimumLevel.Debug()
     .CreateLogger();
 
 builder.Host.UseSerilog();

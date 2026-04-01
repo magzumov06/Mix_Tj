@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using Domain.DTOs.LikeDto;
 using Infrastructure.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApp.Controllers;
@@ -10,6 +11,7 @@ namespace WebApp.Controllers;
 public class LikeController(ILikeService service) : ControllerBase
 {
     [HttpPost]
+    [Authorize(Roles = "User,Admin")]
     public async Task<IActionResult> Post(CreateLikeDto dto)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -24,13 +26,19 @@ public class LikeController(ILikeService service) : ControllerBase
     }
 
     [HttpDelete]
+    [Authorize(Roles = "User,Admin")]
     public async Task<IActionResult> Delete(int id)
     {
-        var res = await service.DeleteLike(id);
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if(userIdClaim == null)
+            return Unauthorized("User not authenticated");
+        var userId = int.Parse(userIdClaim);
+        var res = await service.DeleteLike(id, userId);
         return StatusCode(res.StatusCode, res);
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Get()
     {
         var res = await service.GetLikes();
@@ -38,6 +46,7 @@ public class LikeController(ILikeService service) : ControllerBase
     }
 
     [HttpGet("me")]
+    [Authorize(Roles = "User,Admin")]
     public async Task<IActionResult> GetMyLikes()
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
