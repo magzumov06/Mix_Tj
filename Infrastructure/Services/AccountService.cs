@@ -15,7 +15,6 @@ namespace Infrastructure.Services;
 
 public class AccountService(
     UserManager<User> userManager,
-    IHttpContextAccessor httpContextAccessor,
     IConfiguration configuration,
     IEmailService emailService 
     ) : IAccountService
@@ -75,11 +74,45 @@ public class AccountService(
             if(!isPasswordCorrect)
                 return new Responce<string>(HttpStatusCode.Unauthorized,"UserName or Password is incorrect");
             var token = await GenerateJwtTokenHelper.GenerateJwtToken(user, userManager, configuration);
-            return new Responce<string>(token) {Message = "Welcome to Instagram"};
+            return new Responce<string>(token) {Message = "Welcome to Mix_tj"};
         }
         catch (Exception e)
         {
             Log.Error("Error in Login");
+            return new Responce<string>(HttpStatusCode.InternalServerError, e.Message);
+        }
+    }
+
+    public async Task<Responce<string>> ChangePassword(ChangePassword changePassword, int userId)
+    {
+        try
+        {
+            if (changePassword.NewPassword != changePassword.ConfirmNewPassword)
+            {
+                return new Responce<string>(HttpStatusCode.BadRequest, "Passwords do not match");
+            }
+
+            var user = await userManager.FindByIdAsync(userId.ToString());
+
+            if (user == null)
+                return new Responce<string>(HttpStatusCode.Unauthorized, "User not found");
+
+            var result = await userManager.ChangePasswordAsync(
+                user,
+                changePassword.OldPassword,
+                changePassword.NewPassword
+            );
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                return new Responce<string>(HttpStatusCode.BadRequest, errors);
+            }
+
+            return new Responce<string>(HttpStatusCode.OK, "User password changed successfully");
+        }
+        catch (Exception e)
+        {
             return new Responce<string>(HttpStatusCode.InternalServerError, e.Message);
         }
     }
