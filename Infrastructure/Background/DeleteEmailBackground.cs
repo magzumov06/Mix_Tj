@@ -16,7 +16,7 @@ public class DeleteEmailBackground(IServiceScopeFactory scopeFactory)
         var users = await context.Users
             .Where(u => u.EmailConfirmed == false)
             .Where(u => !context.UserRoles
-                .Any(ur => ur.UserId == u.Id && ur.RoleId == (int)Roles.Admin))
+                .Any(ur => ur.UserId == u.Id && ur.RoleId == (int)Role.Admin))
             .ToListAsync();
 
         if (users.Count != 0)
@@ -27,7 +27,7 @@ public class DeleteEmailBackground(IServiceScopeFactory scopeFactory)
             }
 
             await context.SaveChangesAsync();
-            Log.Information($"{users.Count} users deleted");
+            Log.Information("{UsersCount} users deleted", users.Count);
         }
         else
         {

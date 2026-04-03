@@ -10,9 +10,9 @@ public static class Seed
     public static async Task SeedAdmin(UserManager<User> userManager,
         RoleManager<IdentityRole<int>> roleManager)
     {
-        if (!await roleManager.RoleExistsAsync(Roles.Admin.ToString()))
+        if (!await roleManager.RoleExistsAsync(Role.Admin.ToString()))
         {
-            await roleManager.CreateAsync(new IdentityRole<int>(Roles.Admin.ToString()));
+            await roleManager.CreateAsync(new IdentityRole<int>(Role.Admin.ToString()));
         }
         var user = userManager.Users.FirstOrDefault(x=>x.UserName == "Admin");
         if (user == null)
@@ -29,7 +29,7 @@ public static class Seed
             var result = await userManager.CreateAsync(newUser, "1234Qwerty$");
             if (result.Succeeded)
             {
-                await userManager.AddToRoleAsync(newUser, Roles.Admin.ToString());
+                await userManager.AddToRoleAsync(newUser, Role.Admin.ToString());
             }
         }
     }
@@ -38,14 +38,15 @@ public static class Seed
     {
         var newRole = new List<IdentityRole<int>>()
         {
-            new(Roles.Admin.ToString()),
-            new(Roles.User.ToString()),
-            new(Roles.Moderator.ToString())
+            new(Role.Admin.ToString()),
+            new(Role.User.ToString()),
+            new(Role.Moderator.ToString())
         };
         var roles = await roleManager.Roles.ToListAsync();
         foreach (var role in newRole)
         {
-            if(roles.Any(x => x.Name == role.Name)) continue;
+            if(roles.Any(x => x.Name == role.Name)) 
+                continue;
             await roleManager.CreateAsync(role);
         }
         return true;

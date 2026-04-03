@@ -1,4 +1,3 @@
-using System.Text;
 using Domain.DTOs.EmailDto;
 using Domain.Entities;
 using Hangfire;
@@ -50,7 +49,7 @@ builder.Services.AddHangfire(config =>
     config.UsePostgreSqlStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddHangfireServer();
 
-builder.Services.AddJwt(builder.Configuration);
+builder.Services.RegisterJwt(builder.Configuration);
 
 builder.Services.AddAuthorization(opt => { opt.AddPolicy("AdminOnly", p => p.RequireRole("Admin")); });
 

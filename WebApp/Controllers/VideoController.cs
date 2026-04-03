@@ -59,7 +59,7 @@ public class VideoController(IVideoService service) :  ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles = "User,Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetVideos([FromQuery] VideoFilter filter)
     {
         var res = await service.GetVideos(filter);
@@ -67,7 +67,7 @@ public class VideoController(IVideoService service) :  ControllerBase
     }
 
     [HttpGet("myVideos")]
-    [Authorize(Roles = "User,Admin")]
+    [Authorize]
     public async Task<IActionResult> GetMyVideos()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

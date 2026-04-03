@@ -8,10 +8,11 @@ namespace Infrastructure.ExtensionMethod;
 
 public static class JwtRegister
 {
-    public static void AddJwt(this IServiceCollection services, IConfiguration configuration)
+    public static void RegisterJwt(this IServiceCollection services, IConfiguration configuration)
     {
         var jwt = configuration.GetSection("JWT");
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!));
+
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(opt =>
             {

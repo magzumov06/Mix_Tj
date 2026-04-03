@@ -18,22 +18,23 @@ public static class GenerateJwtTokenHelper
         var issuer = jwtSection.GetValue<string>("Issuer");
         var audience = jwtSection.GetValue<string>("Audience");
         var secret = jwtSection.GetValue<string>("Key");
-        var expiresDate = 3;
-
+        var expiresDay = 3;
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.NameId, user.Id.ToString()),
             new(JwtRegisteredClaimNames.Name, user.UserName),
-            new(JwtRegisteredClaimNames.Email, user.Email), 
+            new(JwtRegisteredClaimNames.Email, user.Email),
         };
+        
         var roles = await userManager.GetRolesAsync(user);
         foreach (var role in roles)
         {
             claims.Add(new Claim("role", role));
         }
+
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expires = DateTime.UtcNow.AddDays(expiresDate);
+        var expires = DateTime.UtcNow.AddDays(expiresDay);
         var token = new JwtSecurityToken(
             issuer: issuer,
             audience: audience,
