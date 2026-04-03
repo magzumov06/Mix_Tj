@@ -10,9 +10,9 @@ public static class Seed
     public static async Task SeedAdmin(UserManager<User> userManager,
         RoleManager<IdentityRole<int>> roleManager)
     {
-        if (!await roleManager.RoleExistsAsync(Role.Admin.ToString()))
+        if (!roleManager.RoleExistsAsync(Role.Admin.ToString()).Result)
         {
-            await roleManager.CreateAsync(new IdentityRole<int>(Role.Admin.ToString()));
+            await roleManager.CreateAsync(new IdentityRole<int>("Admin"));
         }
         var user = userManager.Users.FirstOrDefault(x=>x.UserName == "Admin");
         if (user == null)
@@ -40,7 +40,6 @@ public static class Seed
         {
             new(Role.Admin.ToString()),
             new(Role.User.ToString()),
-            new(Role.Moderator.ToString())
         };
         var roles = await roleManager.Roles.ToListAsync();
         foreach (var role in newRole)
