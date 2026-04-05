@@ -12,6 +12,7 @@ namespace WebApp.Controller;
 public class UserController(IUserService service) : ControllerBase
 {
     [HttpPut]
+    [Authorize]
     public async Task<IActionResult> Put([FromForm] UpdateUserDto updateUserDto)
     {
         var res = await service.UpdateUser(updateUserDto);
@@ -19,6 +20,7 @@ public class UserController(IUserService service) : ControllerBase
     }
     
     [HttpDelete]
+    [Authorize]
     public async Task<IActionResult> DeleteUser()
     {
         var userClaimId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -41,6 +43,7 @@ public class UserController(IUserService service) : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [Authorize]
     public async Task<IActionResult> GetUser()
     {
         var userClaimId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

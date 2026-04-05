@@ -1,4 +1,5 @@
-﻿using Infrastructure.Interfaces;
+﻿using Infrastructure.Data;
+using Infrastructure.Interfaces;
 using Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,5 +16,6 @@ public static class ServiceRegister
         services.AddScoped<IVideoService, VideoService>();
         services.AddScoped<ICommentService, CommentService>();
         services.AddScoped<ILikeService, LikeService>();
+        services.AddScoped<DataContext>();
     }
 }

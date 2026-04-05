@@ -5,7 +5,6 @@ namespace Domain.Entities;
 
 public class User : IdentityUser<int>
 {
-    public int Id { get; set; }
     [EmailAddress]
     [Required]
     public override string Email { get; set; }
@@ -14,6 +13,7 @@ public class User : IdentityUser<int>
     [MaxLength(500)]
     public string? About { get; set; }
     public bool IsDeleted { get; set; } = false;
+    public bool IsBlocked { get; set; } = false;
     public List<Video>? Videos { get; set; }
     public List<News>? News { get; set; }
     public List<Comment>? Comments { get; set; }

@@ -19,7 +19,6 @@ public class CommentController(ICommentService service) : ControllerBase
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userIdClaim == null)
             return Unauthorized("User not found in token");
-
         var userId = int.Parse(userIdClaim);
 
         var res = await service.CreateComment(dto, userId);

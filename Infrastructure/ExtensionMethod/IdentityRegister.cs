@@ -12,12 +12,12 @@ public static class IdentityRegister
         services
             .AddIdentityCore<User>(opt =>
             {
-                opt.Password.RequiredLength = 6;
-                opt.Password.RequireNonAlphanumeric = true;
+                opt.Password.RequiredLength = 8;
+                opt.Password.RequireNonAlphanumeric = false;
                 opt.Password.RequireUppercase = false;
                 opt.Password.RequireLowercase = false;
                 opt.Password.RequireDigit = false;
-                opt.User.RequireUniqueEmail = true;
+                opt.User.RequireUniqueEmail = false;
             })
             .AddRoles<IdentityRole<int>>()
             .AddEntityFrameworkStores<DataContext>()

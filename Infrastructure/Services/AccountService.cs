@@ -3,6 +3,7 @@ using Domain.DTOs.Account;
 using Domain.DTOs.EmailDto;
 using Domain.Entities;
 using Domain.Responces;
+using Infrastructure.Data;
 using Infrastructure.FileStorage;
 using Infrastructure.Helpers;
 using Infrastructure.Interfaces;
@@ -16,8 +17,7 @@ namespace Infrastructure.Services;
 public class AccountService(
     UserManager<User> userManager,
     IConfiguration configuration,
-    IEmailService emailService 
-    ) : IAccountService
+    IEmailService emailService) : IAccountService
 {
     public async Task<Responce<string>> Register(Register register)
     {
@@ -68,8 +68,13 @@ public class AccountService(
         {
             Log.Information("Logining new user");
             var user = await userManager.FindByNameAsync(login.Username);
+            
             if(user == null)
                 return new Responce<string>(HttpStatusCode.Unauthorized,"UserName or Password is incorrect");
+            
+            if (user.IsBlocked == true)
+                return new Responce<string>(HttpStatusCode.Unauthorized,"User is blocked");
+            
             var isPasswordCorrect = await userManager.CheckPasswordAsync(user, login.Password);
             if(!isPasswordCorrect)
                 return new Responce<string>(HttpStatusCode.Unauthorized,"UserName or Password is incorrect");
