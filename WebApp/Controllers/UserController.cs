@@ -18,6 +18,22 @@ public class UserController(IUserService service) : ControllerBase
         var res = await service.UpdateUser(updateUserDto);
         return StatusCode(res.StatusCode, res);
     }
+
+    [HttpPut("block/{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> BlockUser(int id)
+    {
+        var res = await service.BlockUser(id);
+        return StatusCode(res.StatusCode, res);
+    }
+
+    [HttpPut("unblock/{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> UnblockUser(int id)
+    {
+        var res = await service.UnblockUser(id);
+        return StatusCode(res.StatusCode, res);
+    }
     
     [HttpDelete]
     [Authorize]

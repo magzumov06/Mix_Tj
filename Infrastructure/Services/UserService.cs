@@ -55,6 +55,60 @@ public class UserService(
         }
     }
 
+    public async Task<Responce<string>> BlockUser(int id)
+    {
+        try
+        {
+            var user = await context.Users
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (user == null)
+                return new Responce<string>(HttpStatusCode.NotFound, "User not found");
+
+            if (user.IsBlocked)
+                return new Responce<string>(HttpStatusCode.BadRequest, "User already blocked");
+
+            user.IsBlocked = true;
+
+            var result = await context.SaveChangesAsync();
+
+            return result == 0 
+                ? new Responce<string>(HttpStatusCode.BadRequest, "User not blocked") 
+                : new Responce<string>(HttpStatusCode.OK, "User successfully blocked");
+        }
+        catch (Exception ex)
+        {
+            return new Responce<string>(HttpStatusCode.InternalServerError, ex.Message);
+        }
+    }
+
+    public async Task<Responce<string>> UnblockUser(int id)
+    {
+        try
+        {
+            var user = await context.Users
+                .FirstOrDefaultAsync(x => x.Id == id);
+            
+            if (user == null)
+                return new Responce<string>(HttpStatusCode.NotFound, "User not found");
+            
+            if (!user.IsBlocked)
+                return new Responce<string>(HttpStatusCode.BadRequest, "User already unblocked");
+            
+            user.IsBlocked = false;
+            var result = await context.SaveChangesAsync();
+            
+            return result == 0
+                ? new Responce<string>(HttpStatusCode.BadRequest, "User not unblocked")
+                : new Responce<string>(HttpStatusCode.OK, "User successfully unblocked");
+
+        }
+        catch (Exception e)
+        {
+            return new Responce<string>(HttpStatusCode.InternalServerError, e.Message);
+        }
+    }
+
     public async Task<Responce<GetUserDto>> GetUser(int id)
     {
         try

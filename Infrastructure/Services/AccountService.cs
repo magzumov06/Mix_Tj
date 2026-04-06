@@ -64,28 +64,42 @@ public class AccountService(
 
     public async Task<Responce<string>> Login(Login login)
     {
-        try
+        var user = await userManager.FindByNameAsync(login.Username);
+
+        if(user == null)
+            return new Responce<string>(HttpStatusCode.Unauthorized, "Username or password is incorrect");
+
+        if (user.IsBlocked)
+            return new Responce<string>(HttpStatusCode.Forbidden, "Your account is blocked");
+        
+        if (await userManager.IsLockedOutAsync(user))
         {
-            Log.Information("Logining new user");
-            var user = await userManager.FindByNameAsync(login.Username);
-            
-            if(user == null)
-                return new Responce<string>(HttpStatusCode.Unauthorized,"UserName or Password is incorrect");
-            
-            if (user.IsBlocked == true)
-                return new Responce<string>(HttpStatusCode.Unauthorized,"User is blocked");
-            
-            var isPasswordCorrect = await userManager.CheckPasswordAsync(user, login.Password);
-            if(!isPasswordCorrect)
-                return new Responce<string>(HttpStatusCode.Unauthorized,"UserName or Password is incorrect");
-            var token = await GenerateJwtTokenHelper.GenerateJwtToken(user, userManager, configuration);
-            return new Responce<string>(token) {Message = "Welcome to Mix_tj"};
+            var lockEnd = await userManager.GetLockoutEndDateAsync(user);
+            var remaining = lockEnd.Value.UtcDateTime - DateTime.UtcNow;
+
+            return new Responce<string>(
+                HttpStatusCode.Forbidden,
+                $"Account locked. Try again in {remaining.Minutes} minutes and {remaining.Seconds} seconds."
+            );
         }
-        catch (Exception e)
+
+        var isPasswordCorrect = await userManager.CheckPasswordAsync(user, login.Password);
+
+        if(!isPasswordCorrect)
         {
-            Log.Error("Error in Login");
-            return new Responce<string>(HttpStatusCode.InternalServerError, e.Message);
+            await userManager.AccessFailedAsync(user); 
+            int attemptsLeft = 5 - await userManager.GetAccessFailedCountAsync(user);
+            string message = attemptsLeft > 0
+                ? $"Incorrect password. {attemptsLeft} attempts left."
+                : "Account locked due to too many failed attempts.";
+
+            return new Responce<string>(HttpStatusCode.Unauthorized, message);
         }
+
+        await userManager.ResetAccessFailedCountAsync(user);
+
+        var token = await GenerateJwtTokenHelper.GenerateJwtToken(user, userManager, configuration);
+        return new Responce<string>(token) { Message = "Welcome!" };
     }
 
     public async Task<Responce<string>> ChangePassword(ChangePassword changePassword, int userId)

@@ -8,6 +8,8 @@ public interface IUserService
 {
     Task<Responce<string>> UpdateUser(UpdateUserDto update);
     Task<Responce<string>> DeleteUser(int id);
-    public Task<Responce<GetUserDto>> GetUser(int id);
-    public Task<PaginationResponce<List<GetUserDto>>> GetUsers(UserFilter filter);
+    Task<Responce<string>> BlockUser(int id);
+    Task<Responce<string>> UnblockUser(int id);
+    Task<Responce<GetUserDto>> GetUser(int id);
+    Task<PaginationResponce<List<GetUserDto>>> GetUsers(UserFilter filter);
 }
