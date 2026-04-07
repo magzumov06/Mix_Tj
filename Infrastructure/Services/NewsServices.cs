@@ -149,7 +149,7 @@ public class NewsServices(DataContext context) : INewsService
         try
         {
             Log.Information("Getting news");
-            var res = await context.Newses.FirstOrDefaultAsync(x => x.Id == id);
+            var res = await context.Newses.FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted == false);
             if(res == null) return new Responce<GetNewsDto>(HttpStatusCode.NotFound, "News not found");
             var dto = new GetNewsDto()
             {
@@ -175,7 +175,7 @@ public class NewsServices(DataContext context) : INewsService
         try
         {
             var news = await context.Newses
-                .Where(x=>x.AuthorId == authorId)
+                .Where(x=>x.AuthorId == authorId && x.IsDeleted == false)
                 .OrderByDescending(x => x.CreatedAt)
                 .Select(x=>new GetNewsDto()
                 {

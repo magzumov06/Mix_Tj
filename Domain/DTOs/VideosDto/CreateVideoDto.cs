@@ -13,5 +13,4 @@ public class CreateVideoDto
     public string Description { get; set; }
     public IFormFile? Url { get; set; }
     public VideoType VideoType { get; set; }
-    public int AuthorId { get; set; }
 }

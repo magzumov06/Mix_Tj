@@ -23,7 +23,14 @@ public class CommentService(DataContext context) : ICommentService
                 UpdatedAt = DateTime.UtcNow
             };
 
-            if (dto.ParentCommentId != null)
+            if (dto.NewsId.HasValue && dto.NewsId > 0 && dto.VideoId.HasValue && dto.VideoId > 0)
+            {
+                return new Responce<string>(
+                    HttpStatusCode.BadRequest,
+                    "Comment cannot belong to both News and Video");
+            }
+            
+            if (dto.ParentCommentId.HasValue && dto.ParentCommentId > 0)
             {
                 var parent = await context.Comments.FirstOrDefaultAsync(c => c.Id == dto.ParentCommentId);
                 if (parent == null)
@@ -35,13 +42,23 @@ public class CommentService(DataContext context) : ICommentService
             }
             else
             {
-                if (dto.NewsId != null)
+                if (dto.NewsId.HasValue && dto.NewsId > 0)
                 {
+                    var news = await context.Newses.FirstOrDefaultAsync(c => c.Id == dto.NewsId);
+                    
+                    if (news == null)
+                        return new Responce<string>(HttpStatusCode.BadRequest, "News not found");
+                    
                     comment.NewsId = dto.NewsId;
                     comment.VideoId = null;
                 }
-                else if (dto.VideoId != null)
+                else if (dto.VideoId.HasValue && dto.VideoId > 0)
                 {
+                    var  video = await context.Videos.FirstOrDefaultAsync(c => c.Id == dto.VideoId);
+
+                    if (video == null)
+                        return new Responce<string>(HttpStatusCode.BadRequest, "Video not found");
+                    
                     comment.VideoId = dto.VideoId;
                     comment.NewsId = null;
                 }

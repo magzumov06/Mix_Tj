@@ -38,7 +38,7 @@ public class LikeService(DataContext context) : ILikeService
             
             var like = new Like()
             {
-                UserId = dto.UserId,
+                UserId = userId,
                 TargetId = dto.TargetId,
                 Type = dto.Type,
                 TargetType = dto.TargetType,
